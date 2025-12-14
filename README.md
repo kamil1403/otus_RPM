@@ -57,27 +57,28 @@ install -m 755 %{SOURCE0} %{buildroot}/usr/bin/otus-date
 
 %files
 /usr/bin/otus-date
-<a id="two"></a>
+```
 
+<a id="two"></a>
 🧰 Шаг 2 - Сборка пакета
 Устанавливаем rpm-build и собираем пакет:
 
-Bash
-
+```bash
 rpmdev-setuptree
 rpmbuild -bb ~/rpmbuild/SPECS/otus.spec
-<a id="three"></a>
+```
 
+<a id="three"></a>
 🧰 Шаг 3 - Создание репозитория
 Копируем пакет в веб-директорию и создаем метаданные:
 
-Bash
-
+```bash
 mkdir -p /usr/share/nginx/html/repo
 cp ~/rpmbuild/RPMS/noarch/*.rpm /usr/share/nginx/html/repo/
 createrepo /usr/share/nginx/html/repo/
-<a id="four"></a>
+```
 
+<a id="four"></a>
 🧰 Шаг 4 - Настройка Nginx
 Конфигурация /etc/nginx/conf.d/repo.conf для отображения списка файлов:
 
