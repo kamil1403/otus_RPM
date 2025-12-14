@@ -27,7 +27,7 @@
 
 Создаем манифест пакета `otus.spec`. Пакет будет устанавливать простой скрипт в `/usr/bin/`.
 
-```spec
+```bash
 Name:           otus-package
 Version:        1.0
 Release:        1%{?dist}
