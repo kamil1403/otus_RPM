@@ -82,6 +82,7 @@ createrepo /usr/share/nginx/html/repo/
 🧰 Шаг 4 - Настройка Nginx
 Конфигурация /etc/nginx/conf.d/repo.conf для отображения списка файлов:
 
+```bash
 Nginx
 
 server {
@@ -93,9 +94,6 @@ server {
         autoindex on;
     }
 }
-Проверка:
-
-Bash
 
 # Проверяем доступность репозитория
 curl -I http://localhost/repo/repodata/repomd.xml
