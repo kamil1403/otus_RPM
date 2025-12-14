@@ -1,162 +1,100 @@
-Урок: otus_RPM   
-Автор: Kamil Ibragimov   
-Дата: 30.05.2025   
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/RPM_logo.svg/1200px-RPM_logo.svg.png" alt="Banner" width="30%">
+</p>
 
-## Домашнее задание: Сборка RPM-пакета и создание репозитория
-Цель:   
-• Научиться собирать RPM-пакеты;   
-• Создать собственный RPM-репозиторийы.     
+## ![Lesson](https://img.shields.io/badge/Lesson-otus__rpm-0A84FF?style=for-the-badge&logo=redhat&logoColor=white&labelColor=111827)![Author](https://img.shields.io/badge/Author-Kamil%20Ibragimov-10B981?style=for-the-badge&logo=github&logoColor=white&labelColor=111827)![Date](https://img.shields.io/badge/Date-14.12.2025-F59E0B?style=for-the-badge&logo=calendar&logoColor=white&labelColor=111827)
 
-Задание:   
-• Создать свой RPM (можно взять свое приложение, либо собрать к примеру Apache с определенными опциями);   
-• Создать свой репозиторий и разместить там ранее собранный RPM;   
-• Реализовать это все либо в Vagrant, либо развернуть у себя через Nginx и дать ссылку на репозиторий.      
+### 📌 Задание
+1. Создать свой RPM-пакет (приложение или скрипт).
+2. [cite_start]Создать свой репозиторий и разместить там собранный RPM [cite: 696-699].
+3. Реализовать раздачу пакета через веб-сервер (Nginx).
 
-Результат:   
-• Запустил две виртуальные машины (Server 192.168.1.99 и Client 192.168.1.100), настроил между ними связь через NFS. Шаги описал в [🗄️ Server](#nfs_ser) и [🖥️ Client](#nfs_cl)    
-• Создал скрипт для конфигурирования NFS на сервере. Результат см. на скриншоте 🖼️ ["serv1"](https://github.com/kamil1403/otus_NFS/blob/main/screenshots/Server_NFS_bash_1.png) и 🖼️ ["serv2"](https://github.com/kamil1403/otus_NFS/blob/main/screenshots/Server_NFS_bash_2.png)   
-• Создал скрипт для конфигурирования NFS на клиенте. Результат см. на скриншоте 🖼️ ["client1"](https://github.com/kamil1403/otus_NFS/blob/main/screenshots/Clietn_NFS_bash_1.png) и 🖼️ ["client2"](https://github.com/kamil1403/otus_NFS/blob/main/screenshots/Clietn_NFS_bash_2.png)  
+### ✅ Результат
+- [x] RPM-пакет `otus-package-1.0-1` собран вручную.
+- [x] Локальный репозиторий инициализирован с помощью `createrepo`.
+- [x] Пакет доступен для скачивания через Nginx. Результат см. на скриншоте 🖼️ ["repo_check.png"](repo_check.png)
 
-
-## 🧭 Оглавление
-
-- [🗄️ Настройка NFS на сервере](#nfs_ser)
-- [🖥️ Настройка NFS на клиенте](#nfs_cl)
-- [✍🏻 Скрипт автоматической настройки NFS на сервере](#bash_ser)
-- [✍🏻 Скрипт автоматической настройки NFS на клиенте](#bash_cl)
-- [💡 Различные команды из урока](#other)
+### 🧭 Оглавление
+- [🧰 Шаг 1 - Подготовка SPEC](#one)
+- [🧰 Шаг 2 - Сборка пакета](#two)
+- [🧰 Шаг 3 - Создание репозитория](#three)
+- [🧰 Шаг 4 - Настройка Nginx](#four)
 
 ---
 
-<a id="nfs_ser"></a>
-## 🗄️ Настройка NFS на сервере (IP 192.168.1.99)
+<a id="one"></a>
+## 🧰 Шаг 1 - Подготовка SPEC
 
-```bash
-sudo apt update
-sudo apt install nfs-kernel-server
-mkdir -p /srv/share/upload
-chown -R nobody:nogroup /srv/share
-chmod 0777 /srv/share/upload 
-nano /etc/exports
-/srv/share 192.168.1.100/32(rw,sync,root_squash)
-exportfs -ra 
-sudo exportfs -s
-cd /srv/share/upload
-touch check_file_server
-```
+Создаем манифест пакета `otus.spec`. Пакет будет устанавливать простой скрипт в `/usr/bin/`.
 
----
+```spec
+Name:           otus-package
+Version:        1.0
+Release:        1%{?dist}
+Summary:        Otus Homework
+License:        GPL
+Source0:        otus-script.sh
+BuildArch:      noarch
+Requires:       bash
 
-<a id="nfs_cl"></a>
-## 🖥️ Настройка NFS на клиенте (IP 192.168.1.100)
+%description
+Otus homework package.
 
-```bash|
-sudo apt install nfs-common
-echo "192.168.1.99:/srv/share/ /mnt nfs vers=3,defaults 0 0" >> /etc/fstab
-systemctl daemon-reload 
-mount | grep mnt 
-sudo reboot
-showmount -a 192.168.1.99
-```
+%install
+mkdir -p %{buildroot}/usr/bin/
+install -m 755 %{SOURCE0} %{buildroot}/usr/bin/otus-date
 
----
+%files
+/usr/bin/otus-date
+Requires:       bash
 
-<a id="bash_ser"></a>
-## ✍🏻 Скрипт автоматической настройки NFS на сервере
+%description
+Otus homework package.
 
-```bash
-#!/bin/bash
+%install
+mkdir -p %{buildroot}/usr/bin/
+install -m 755 %{SOURCE0} %{buildroot}/usr/bin/otus-date
 
-# Устанавливает пакет
-sudo apt install -y nfs-kernel-server
-# Создает каталог
-mkdir -p /srv/share/upload
-# Меняет владельца и группу для папки
-chown -R nobody:nogroup /srv/share
-# Открывает полные права
-chmod 0777 /srv/share/upload
-# Открывает доступ к папке /srv/share для клиента 192.168.1.100
-echo "/srv/share 192.168.1.100/32(rw,sync,root_squash)" >> /etc/exports
-# Применяет экспорт
-exportfs -ra
-# Проверяет, что каталог расшаривается 
-sudo exportfs -s
-# Переходит в каталог
-cd /srv/share/upload
-# Создает пустой файл в папке
-touch check_file_server
-```
+%files
+/usr/bin/otus-date
+<a id="two"></a>
 
----
+🧰 Шаг 2 - Сборка пакета
+Устанавливаем rpm-build и собираем пакет:
 
-<a id="bash_cl"></a>
-## ✍🏻 Скрипт автоматической настройки NFS на клиенте
+Bash
 
-```bash
-#!/bin/bash
+rpmdev-setuptree
+rpmbuild -bb ~/rpmbuild/SPECS/otus.spec
+<a id="three"></a>
 
-# Устанавливает пакет
-sudo apt install -y nfs-common
-# Добавляет запись в файл для автоматического монтирования
-echo "192.168.1.99:/srv/share/ /mnt nfs vers=3,defaults 0 0" >> /etc/fstab 
-# Перезагружает конфигурацию
-systemctl daemon-reload
-# Монтирует все файловые системы
-sudo mount -a
-# Добавляет паузу в пять секунд
-sleep 5
-# Выводит список смонтированных ФС
-mount | grep mnt
-# Переходит в папку
-cd /mnt/upload
-# Создает пустой файл в папке
-touch check_file_client
-```
+🧰 Шаг 3 - Создание репозитория
+Копируем пакет в веб-директорию и создаем метаданные:
 
-<a id="other"></a>
-## 💡 Различные команды из урока
+Bash
 
-```bash
-# Установка NFS-сервера
-sudo apt update
-sudo apt install nfs-kernel-server
-# Настройка файла exports на сервере (/etc/exports) 
-/mnt/raid01 *(rw,root_squash)
-# Применяет экспорт
-sudo exportfs -ra   
-# Проверяет, что каталог расшаривается 
-sudo exportfs -v 
-# Монтирует каталог на клиенте
-mount 192.168.1.99:/mnt/raid01 /mnt/ 
-# или
-mount -o vers=3 192.168.1.99:/mnt/raid01  /mnt
-# Размонирует каталог
-umount /mnt
-# Показывает установленную версию NFS
-dpkg -l | grep -i nfs 
-# Показывает экспортируемые каталоги
-showmount -e 192.168.1.99
-# Показыает смонитрованные каталоги
-mount 
-mount | grep 192.168.1.99
-# Показыает протоколы
-rpcinfo | grep nfs
-# Редактирует файл nfs-kernel-server (/etc/default/)
-nano /etc/default/nfs-kernel-server
-# Запрещает nfs v.3 (не работает)
-RPCMOUNTDARGS="--manage-gids"
-RPCMOUNTDOPTS="--no-nfs-version 3"
-# Показывает службы (интересует /usr/sbin/rpc.mountd)
-ps -efl | grep rpc
-# Ищет расположение rpc службы (\ комментирует символы)
-grep -r "\/usr\/sbin\/rpc\.mountd" /lib/systemd
-# Редактирует службу
-nano /lib/systemd/system/nfs-mountd.service
-# Прописывает --no-nfs-version 3 ("костыльный" вариант)
-ExecStart=/usr/sbin/rpc.mountd --no-nfs-version 3
-# Перезапускает службу 
-systemctl daemon-reload
-systemctl restart nfs-server.service
-```
+mkdir -p /usr/share/nginx/html/repo
+cp ~/rpmbuild/RPMS/noarch/*.rpm /usr/share/nginx/html/repo/
+createrepo /usr/share/nginx/html/repo/
+<a id="four"></a>
 
----
+🧰 Шаг 4 - Настройка Nginx
+Конфигурация /etc/nginx/conf.d/repo.conf для отображения списка файлов:
+
+Nginx
+
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    
+    location /repo/ {
+        autoindex on;
+    }
+}
+Проверка:
+
+Bash
+
+# Проверяем доступность репозитория
+curl -I http://localhost/repo/repodata/repomd.xml
