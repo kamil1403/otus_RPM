@@ -61,7 +61,6 @@ install -m 755 %{SOURCE0} %{buildroot}/usr/bin/otus-date
 
 <a id="two"></a>
 🧰 Шаг 2 - Сборка пакета
-Устанавливаем rpm-build и собираем пакет:
 
 ```bash
 rpmdev-setuptree
