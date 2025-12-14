@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Red_Hat_logo.svg/800px-Red_Hat_logo.svg.png" alt="Red Hat Banner" width="40%">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Red_Hat_logo.svg/800px-Red_Hat_logo.svg.png" alt="Red Hat Banner" width="20%">
 </p>
 
 ## ![Lesson](https://img.shields.io/badge/Lesson-otus__rpm-0A84FF?style=for-the-badge&logo=redhat&logoColor=white&labelColor=111827)![Author](https://img.shields.io/badge/Author-Kamil%20Ibragimov-10B981?style=for-the-badge&logo=github&logoColor=white&labelColor=111827)![Date](https://img.shields.io/badge/Date-14.12.2025-F59E0B?style=for-the-badge&logo=calendar&logoColor=white&labelColor=111827)
